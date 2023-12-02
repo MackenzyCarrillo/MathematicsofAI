@@ -9,6 +9,10 @@ public class Drive : MonoBehaviour
     public float speed = 10.0f;
     public float rotationSpeed = 100.0f;
     public GameObject Fuel;
+
+    bool autoPilot = false;
+
+
     void Start()
     {
 
@@ -24,16 +28,24 @@ public class Drive : MonoBehaviour
         Debug.Log("Angle " + angle * Mathf.Rad2Deg);
         Debug.Log("Unity angle " + Vector3.Angle(tF, fD));
 
-         Debug.DrawRay(this.transform.position, tF * 10, Color.blue, 2);
-         Debug.DrawRay(this.transform.position, fD, Color.red, 2);
+        Debug.DrawRay(this.transform.position, tF * 10, Color.blue, 2);
+        Debug.DrawRay(this.transform.position, fD, Color.red, 2);
 
-        this.transform.Rotate(0, 0, angle * Mathf.Rad2Deg);
+        int clockwise = 1;
+        if (Cross(tF, fD).z < 0)
+        {
+            clockwise = -1;
+        }
+
+
+
+        this.transform.Rotate(0, 0, (angle * Mathf.Rad2Deg) * 0.5f);
 
 
 
     }
-    
-     Vector3 Cross(Vector3 v, Vector3 w)
+
+    Vector3 Cross(Vector3 v, Vector3 w)
     {
         float xMult = v.y * w.z - v.z * w.y;
         float yMult = v.z * w.x - v.x * w.z;
@@ -41,17 +53,27 @@ public class Drive : MonoBehaviour
         Vector3 crossProd = new Vector3(xMult, yMult, zMult);
         return crossProd;
     }
-    
-    
-    
-    void CalculateDistance()
+
+
+
+    float CalculateDistance()
     {
-        Vector3 tP = this .transform.position;
+        Vector3 tP = this.transform.position;
         Vector3 fP = Fuel.transform.position;
         float distance = Mathf.Sqrt(Mathf.Pow(tP.x - fP.x, 2) + Mathf.Pow(tP.y - fP.y, 2));
 
         Debug.Log("Distance: " + distance);
+        return (distance);
     }
+
+
+    float autoSpeed = 0.1f;
+    void AutoPilot()
+    {
+        CalculateAngle();
+        this.transform.Translate(this.transform.up * autoSpeed, Space.World);
+    }
+
 
 
     void Update()
@@ -72,11 +94,25 @@ public class Drive : MonoBehaviour
         // Rotate around our y-axis
         transform.Rotate(0, 0, -rotation);
 
-       if(Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetKeyDown(KeyCode.Space))
         {
             CalculateDistance();
             CalculateAngle();
         }
-    
+
+        if (Input.GetKeyDown(KeyCode.T))
+        {
+            autoPilot = !autoPilot;
+
+        }
+        if (autoPilot)
+        {
+            if (CalculateDistance() > 5)
+            {
+                AutoPilot();
+            }
+
+        }
+
     }
 }
